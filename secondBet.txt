@@ -1,0 +1,137 @@
+pragma solidity >=0.4.0 <=0.6.0;
+
+contract firstBet {
+    
+    //uint betAmount = 20;
+    // check how to give etherium to contract and how to give it away
+    
+    address payable owner;
+    
+    enum Phases { Commit, Reveal }
+    Phases phase = Phases.Commit;
+    
+    struct Commit{
+        bytes32 hashedSeeds;
+        uint guesses;
+        bool voted;
+        bool revealed;
+        bool winner;
+    }
+    mapping(address => Commit) public commits;
+    
+    uint participantCount = 0;
+    uint jackpot = 0;
+    string[] clearSeeds;
+    
+    constructor() public {
+        owner = msg.sender;
+    }
+    
+    function commit(bytes32  _hashedSeed, uint _guess) public payable {
+        require(phase == Phases.Commit, "only available in commit phase");
+        require(commits[msg.sender].voted == false, "You can only vote once!");
+        require(_guess < 7 && _guess > 0, "invalid guess!");
+        
+        // We got an error from this require part, so I just commented out this line. 
+        // require(msg.value == 1 ether, "gambling amount set to 1 ether for now");
+        
+        jackpot += msg.value;
+        commits[msg.sender].hashedSeeds = _hashedSeed;
+        commits[msg.sender].guesses = _guess;
+        commits[msg.sender].voted = true;
+        participantCount++;
+    }
+    
+    function testKeccak(string memory _toHash) public pure returns (bytes32 _hash) {
+        _hash = keccak256(abi.encodePacked(_toHash));
+    }
+    
+    function triggerRevealPhase() public {
+        require(owner == msg.sender);
+        
+        phase = Phases.Reveal;
+    }
+    
+    function reveal(string memory _clearSeed) public {
+        require(phase == Phases.Reveal, "only available in reveal phase");
+        require(commits[msg.sender].voted == true, "You did not participate in the commit phase!");
+        require(commits[msg.sender].revealed == false, "You can only reveal unrevealed commmit.");
+        
+        //require(_clearSeed < 100 && _clearSeed >= 0, "invalid clearSeed!");
+        
+        if(commits[msg.sender].hashedSeeds == keccak256(abi.encodePacked(_clearSeed)))
+            clearSeeds.push(_clearSeed);
+        /*else
+            abort();
+            
+        if(clearSeeds.length == participantCount)
+            PRNG();
+            notify();
+            */
+        
+    }
+    
+    function withdrawlWin() public payable {
+        require(commits[msg.sender].winner == true);
+        
+    }
+    
+//------------------------------------------------------------------------------------- 
+  
+    /*function abort() private {}
+    function PRNG() private returns (uint number) {uint number = 1;}
+    function notify() private {}*/
+    
+    
+    /*uint likeAsparagus; // public generates a getter, but not a setter! (unlike java!)
+    uint hateAsparagus;
+    
+    bool active = true;
+    
+    mapping(address => bool) voted; // it's like a (Hash)Map on Java/C++
+    
+    address payable owner;
+    
+    constructor() public {
+        owner = msg.sender;
+    }
+    
+    function stopVoting() public {
+        require(owner == msg.sender);
+        
+        active = false;
+    }
+    
+    function destroyContract() public {
+        require(owner == msg.sender);
+        
+        selfdestruct(owner);
+    }
+    
+    function vote(bool _iLikeAspargus) public returns (uint[2] memory results) {
+        require(voted[msg.sender] == false, "You can only vote once!");
+        require(msg.sender != owner, "The owner cannot vote!");
+        require(active);
+        
+        if(_iLikeAspargus)
+            likeAsparagus++;
+        else 
+            hateAsparagus++;
+        
+        voted[msg.sender] = true; // msg is a global object
+                                  // msg.sender the transaction's sender address
+                                  
+        results = getResults();
+    }
+    
+    function getResults() public view returns(uint[2] memory) {
+        uint[2] memory results;
+        
+        results[0] = likeAsparagus;
+        results[1] = hateAsparagus;
+        
+        return results;
+    }*/
+    
+    
+}
