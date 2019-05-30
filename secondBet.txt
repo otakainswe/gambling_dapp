@@ -1,6 +1,8 @@
 pragma solidity >=0.4.0 <=0.6.0;
 
-contract firstBet {
+import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
+contract firstBet  {
     
     //uint betAmount = 20;
     // check how to give etherium to contract and how to give it away
@@ -12,7 +14,7 @@ contract firstBet {
     
     struct Commit{
         bytes32 hashedSeeds;
-        uint guesses;
+        uint8 guesses;
         bool voted;
         bool revealed;
         bool winner;
@@ -27,7 +29,7 @@ contract firstBet {
         owner = msg.sender;
     }
     
-    function commit(bytes32  _hashedSeed, uint _guess) public payable {
+    function commit(bytes32  _hashedSeed, uint8 _guess) public payable {
         require(phase == Phases.Commit, "only available in commit phase");
         require(commits[msg.sender].voted == false, "You can only vote once!");
         require(_guess < 7 && _guess > 0, "invalid guess!");
